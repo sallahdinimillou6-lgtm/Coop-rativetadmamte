@@ -26,7 +26,7 @@ export const products: Product[] = [
     weightAr: '500 غرام',
     weightFr: '500g',
     weightEn: '500g',
-    image: '/images/premium_honey_jar.webp',
+    image: '/images/honey_flowers.webp',
     isBestSeller: true
   },
   {
@@ -54,7 +54,7 @@ export const products: Product[] = [
     weightAr: '500 غرام',
     weightFr: '500g',
     weightEn: '500g',
-    image: '/images/premium_honey_jar.webp'
+    image: '/images/honey_sidr.webp'
   },
   {
     id: 'honey-harsha',
@@ -81,7 +81,7 @@ export const products: Product[] = [
     weightAr: '500 غرام',
     weightFr: '500g',
     weightEn: '500g',
-    image: '/images/premium_honey_jar.webp',
+    image: '/images/honey_harsha.webp',
     isBestSeller: true
   },
   {
@@ -109,7 +109,7 @@ export const products: Product[] = [
     weightAr: '500 غرام',
     weightFr: '500g',
     weightEn: '500g',
-    image: '/images/traditional_amlou_jar.webp',
+    image: '/images/amlou_almond.webp',
     isBestSeller: true
   },
   {
@@ -130,14 +130,14 @@ export const products: Product[] = [
     longDescriptionFr: 'Une création unique de notre coopérative : mélange de noix de Souss et d’amandes, liées à l’huile d’argan pure et adoucies au miel thérapeutique de Sidr.',
     longDescriptionEn: 'A luxury innovation exclusive to our cooperative. We blend rich Souss walnuts and almonds, knead them with pure argan oil, and finish with the warm healing touch of Sidr honey.',
     benefits: ['غني بأحماض أوميغا ٣ الهامة لصحة الدماغ والتركيز', 'وجبة صباحية مثالية للرياضيين والأطفال للنشاط الذهني', 'قوام كريمي فاخر ومذاق متداخل غاية في التعقيد والمتعة'],
-    benefitsAr: ['غني بأحماغ أوميغا ٣ الهامة لصحة الدماغ والتركيز', 'وجبة صباحية مثالية للرياضيين والأطفال للنشاط الذهني', 'قوام كريمي فاخر ومذاق متداخل غاية في التعقيد والمتعة'],
+    benefitsAr: ['غني بأحماض أوميغا ٣ الهامة لصحة الدماغ والتركيز', 'وجبة صباحية مثالية للرياضيين والأطفال للنشاط الذهني', 'قوام كريمي فاخر ومذاق متداخل غاية في التعقيد والمتعة'],
     benefitsFr: ['Riche en oméga-3 essentiels pour le cerveau et la mémoire', 'Petit-déjeuner idéal pour le tonus des sportifs et enfants', 'Texture crémeuse exquise et saveurs complexes'],
     benefitsEn: ['Highly rich in Omega-3 fatty acids for brain health and focus', 'Perfect morning breakfast booster for athletes and kids', 'Luxurious creamy texture and complex deeply satisfying taste'],
     weight: '500 غرام',
     weightAr: '500 غرام',
     weightFr: '500g',
     weightEn: '500g',
-    image: '/images/traditional_amlou_jar.webp'
+    image: '/images/amlou_walnut.webp'
   },
   {
     id: 'rare-wild-souss',
@@ -164,7 +164,7 @@ export const products: Product[] = [
     weightAr: '500 غرام',
     weightFr: '500g',
     weightEn: '500g',
-    image: '/images/premium_honey_jar.webp'
+    image: '/images/honey_rare_wild.webp'
   },
   {
     id: 'rare-chendgoura',
@@ -191,7 +191,7 @@ export const products: Product[] = [
     weightAr: '500 غرام',
     weightFr: '500g',
     weightEn: '500g',
-    image: '/images/premium_honey_jar.webp'
+    image: '/images/honey_chendgoura.webp'
   }
 ];
 
@@ -203,7 +203,7 @@ export const testimonials: Testimonial[] = [
     location: 'الدار البيضاء',
     content: 'أملو Coopérative Tadmamte هو الأفضل بلا منازع! جودة زيت الأركان واضحة وحلاوته نابعة من عسل حقيقي وليس سكر مستتر كالمتاجر التجارية. أنصح به كل مراجعي وعائلتي.',
     rating: 5,
-    avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=150&h=150&q=80'
+    avatar: '/images/avatar_amina.jpg'
   },
   {
     id: 't-2',
@@ -212,7 +212,7 @@ export const testimonials: Testimonial[] = [
     location: 'أكادير',
     content: 'أشتري عسل السدر السوسي والزعتر من Coopérative Tadmamte بانتظام. النقاء والذوق لا تشوبه شائبة، وتغليف المنتجات في قوارير زجاجية أنيقة يشعرك بالفخامة قبل تذوقه. الشحن سريع ومهذب جداً.',
     rating: 5,
-    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&h=150&q=80'
+    avatar: '/images/avatar_rachid.jpg'
   },
   {
     id: 't-3',
@@ -221,7 +221,7 @@ export const testimonials: Testimonial[] = [
     location: 'مراكش',
     content: 'أحببت قصة النساء وراء المشروع وتأثرت كثيراً بالجهد اليدوي والأمانة في الإنتاج. العسل برائحته يذكرني بطفولتي في قرى سوس. تصميم المتجر وتجربة الشراء ممتعة وتليق بالتراث الفاخر.',
     rating: 5,
-    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&h=150&q=80'
+    avatar: '/images/avatar_fatima.jpg'
   },
   {
     id: 't-4',
@@ -230,7 +230,7 @@ export const testimonials: Testimonial[] = [
     location: 'تارودانت، سوس',
     content: 'التعاونية وفرت لنا نحن نساء القرية بيئة آمنة للعمل ودخلاً كريماً نصون به كرامة بيوتنا. كل قطرة عسل أو حبة أملو نصنعها بقلوبنا ودعائنا بالبركة لمن يتذوقها.',
     rating: 5,
-    avatar: 'https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?auto=format&fit=crop&w=150&h=150&q=80'
+    avatar: '/images/avatar_fadhma.jpg'
   }
 ];
 

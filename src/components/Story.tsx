@@ -141,6 +141,10 @@ export function Story() {
                   className="w-full h-full object-cover"
                   loading="lazy"
                   referrerPolicy="no-referrer"
+                  onError={(e) => {
+                    e.currentTarget.onerror = null;
+                    e.currentTarget.src = 'https://images.unsplash.com/photo-1590736969955-71cc94801759?auto=format&fit=crop&q=80&w=800';
+                  }}
                 />
               </picture>
               <div className="absolute inset-0 bg-gradient-to-t from-brand-dark/25 to-transparent" />

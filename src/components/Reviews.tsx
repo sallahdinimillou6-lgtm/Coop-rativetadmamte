@@ -161,6 +161,10 @@ export function Reviews() {
                     className="w-10 h-10 object-cover rounded-full border border-brand-gold/25"
                     loading="lazy"
                     referrerPolicy="no-referrer"
+                    onError={(e) => {
+                      e.currentTarget.onerror = null;
+                      e.currentTarget.src = 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=150&h=150&q=80';
+                    }}
                   />
                   <div>
                     <h4 className="font-reem font-bold text-sm text-brand-brown">{translation.name}</h4>
