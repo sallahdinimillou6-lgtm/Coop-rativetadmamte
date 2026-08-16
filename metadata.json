@@ -1,0 +1,6 @@
+{
+  "name": "Coopérative Tadmamte",
+  "description": "متجر إلكتروني لتعاونية Coopérative Tadmamte لإنتاج العسل الطبيعي، أملو الأصيل، ومنتجات سوس الطبيعية.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

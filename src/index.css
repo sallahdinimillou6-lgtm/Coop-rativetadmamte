@@ -1,0 +1,54 @@
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Reem+Kufi:wght@400;500;600;700;800&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "IBM Plex Sans Arabic", "Cairo", "Inter", sans-serif;
+  --font-reem: "Reem Kufi", sans-serif;
+  
+  --color-brand-gold: #D4AF37;
+  --color-brand-gold-hover: #B5932F;
+  --color-brand-amber: #E29543;
+  --color-brand-brown: #331B15;
+  --color-brand-earth: #4D2E24;
+  --color-brand-olive: #5B7043;
+  --color-brand-argan: #6A7F48;
+  --color-brand-indigo: #0F3A5F;
+  --color-brand-dark: #190F0C;
+  --color-brand-sand: #FAF6F0;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: #FAF6F0; /* Elegant light-sand warm background */
+  background-image: 
+    linear-gradient(to bottom, rgba(250, 246, 240, 0.85), rgba(250, 246, 240, 0.92)),
+    url('/images/moroccan_pattern_bg.jpg');
+  background-attachment: fixed;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  color: #190F0C;
+  direction: rtl;
+}
+
+/* Elegant scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #FAF6F0;
+}
+::-webkit-scrollbar-thumb {
+  background: #D4AF37;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #B5932F;
+}
+
+/* Focus styling */
+*:focus-visible {
+  outline: 2px solid #D4AF37;
+  outline-offset: 2px;
+}
