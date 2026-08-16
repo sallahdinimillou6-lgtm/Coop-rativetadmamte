@@ -26,6 +26,7 @@ export function Hero({ onScrollToProducts, onScrollToStory }: HeroProps) {
             className="w-full h-full object-cover object-center opacity-80 scale-100 select-none"
             loading="eager"
             fetchPriority="high"
+            decoding="async"
             referrerPolicy="no-referrer"
             onError={(e) => {
               e.currentTarget.onerror = null;

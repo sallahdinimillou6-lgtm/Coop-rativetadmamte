@@ -30,12 +30,13 @@ export function ProductCard({ product, onAddToCart, onOpenDetails }: ProductCard
       id={`product-card-${product.id}`}
     >
       {/* Product Image */}
-      <div className="relative overflow-hidden aspect-4/3 bg-brand-sand/50">
+      <div className="relative overflow-hidden aspect-4/3 bg-[#F4EDE2]">
         <img
           src={product.image}
           alt={name}
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
           loading="lazy"
+          decoding="async"
           referrerPolicy="no-referrer"
           onError={(e) => {
             e.currentTarget.onerror = null;
