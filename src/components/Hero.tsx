@@ -22,8 +22,8 @@ export function Hero({ onScrollToProducts, onScrollToStory }: HeroProps) {
           <source srcSet="/images/hero-background.webp" type="image/webp" />
           <img
             src="/images/hero-background.jpg"
-            alt="Moroccan Souss plains with Atlas mountains"
-            className="w-full h-full object-cover object-center opacity-80 scale-100 select-none"
+            alt="Authentic Moroccan Souss landscape with Argan trees and mountains"
+            className="w-full h-full object-cover object-center opacity-85 scale-100 select-none brightness-95 contrast-105"
             loading="eager"
             fetchPriority="high"
             decoding="async"
