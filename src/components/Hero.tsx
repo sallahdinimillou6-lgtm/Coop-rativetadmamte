@@ -6,10 +6,16 @@ import { useLanguage } from '../utils/translations';
 interface HeroProps {
   onScrollToProducts: () => void;
   onScrollToStory: () => void;
+  customBackground?: string;
 }
 
-export function Hero({ onScrollToProducts, onScrollToStory }: HeroProps) {
+export function Hero({ onScrollToProducts, onScrollToStory, customBackground }: HeroProps) {
   const { language, t } = useLanguage();
+  const isDefaultBg = !customBackground || 
+    customBackground === '/images/hero-background-v2.webp' || 
+    customBackground === '/images/hero-background-v2.jpg' ||
+    customBackground === '/images/hero-background.webp' || 
+    customBackground === '/images/hero-background.jpg';
 
   return (
     <section 
@@ -18,11 +24,27 @@ export function Hero({ onScrollToProducts, onScrollToStory }: HeroProps) {
     >
       {/* Background Image with elegant overlay */}
       <div className="absolute inset-0 z-0 bg-brand-dark">
-        <picture>
-          <source srcSet="/images/hero-background.webp" type="image/webp" />
+        {isDefaultBg ? (
+          <picture>
+            <source srcSet="/images/hero-background-v2.webp" type="image/webp" />
+            <img
+              src="/images/hero-background-v2.jpg"
+              alt="Authentic Moroccan Souss landscape with Argan trees and mountains"
+              className="w-full h-full object-cover object-center opacity-85 scale-100 select-none brightness-95 contrast-105"
+              loading="eager"
+              fetchPriority="high"
+              decoding="async"
+              referrerPolicy="no-referrer"
+              onError={(e) => {
+                e.currentTarget.onerror = null;
+                e.currentTarget.src = '/images/hero-background-v2.webp';
+              }}
+            />
+          </picture>
+        ) : (
           <img
-            src="/images/hero-background.jpg"
-            alt="Authentic Moroccan Souss landscape with Argan trees and mountains"
+            src={customBackground}
+            alt="Custom Moroccan Souss landscape"
             className="w-full h-full object-cover object-center opacity-85 scale-100 select-none brightness-95 contrast-105"
             loading="eager"
             fetchPriority="high"
@@ -30,10 +52,10 @@ export function Hero({ onScrollToProducts, onScrollToStory }: HeroProps) {
             referrerPolicy="no-referrer"
             onError={(e) => {
               e.currentTarget.onerror = null;
-              e.currentTarget.src = '/images/hero-background.webp';
+              e.currentTarget.src = '/images/hero-background-v2.webp';
             }}
           />
-        </picture>
+        )}
         {/* Soft elegant gradient overlays to ensure text remains perfectly readable without washing out the mountain landscape */}
         <div className={`absolute inset-0 bg-linear-to-${language === 'ar' ? 'r' : 'l'} from-brand-dark/90 via-brand-dark/50 to-brand-dark/20`} />
         <div className="absolute inset-0 bg-linear-to-t from-brand-dark/95 via-transparent to-brand-dark/30" />

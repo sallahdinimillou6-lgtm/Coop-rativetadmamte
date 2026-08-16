@@ -22,6 +22,8 @@ interface AdminPanelProps {
   onAddProduct: (product: Product) => void;
   onUpdateProduct: (product: Product) => void;
   onDeleteProduct: (productId: string) => void;
+  heroBackground: string;
+  onUpdateHeroBackground: (bgUrl: string) => void;
 }
 
 export function AdminPanel({
@@ -30,12 +32,20 @@ export function AdminPanel({
   products,
   onAddProduct,
   onUpdateProduct,
-  onDeleteProduct
+  onDeleteProduct,
+  heroBackground,
+  onUpdateHeroBackground
 }: AdminPanelProps) {
   const { language } = useLanguage();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [password, setPassword] = useState('');
   const [loginError, setLoginError] = useState('');
+  const [activeTab, setActiveTab] = useState<'products' | 'hero'>('products');
+
+  // Hero Background state
+  const [customHeroPreview, setCustomHeroPreview] = useState<string | null>(null);
+  const [isSavingHero, setIsSavingHero] = useState(false);
+  const heroFileInputRef = useRef<HTMLInputElement>(null);
   
   // Form State
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -114,6 +124,46 @@ export function AdminPanel({
       };
       reader.readAsDataURL(file);
     }
+  };
+
+  const handleHeroImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (!file.type.startsWith('image/')) {
+        setFormError(isAr ? 'الملف المرفوع ليس صورة صالحة' : 'Please select a valid image file');
+        return;
+      }
+      if (file.size > 20 * 1024 * 1024) {
+        setFormError(isAr ? 'حجم الصورة كبير جداً (أكثر من 20 ميغابايت)' : 'Image exceeds 20MB');
+        return;
+      }
+      setFormError('');
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setCustomHeroPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleSaveHeroBackground = () => {
+    if (!customHeroPreview) return;
+    setIsSavingHero(true);
+    try {
+      onUpdateHeroBackground(customHeroPreview);
+      showSuccess(isAr ? 'تم حفظ وتطبيق صورة واجهة الموقع الجديدة بنجاح!' : 'Hero background updated successfully!');
+      setCustomHeroPreview(null);
+    } catch (err: any) {
+      setFormError(isAr ? 'فشل حفظ صورة الخلفية' : 'Failed to save hero background');
+    } finally {
+      setIsSavingHero(false);
+    }
+  };
+
+  const handleResetHeroBackground = () => {
+    onUpdateHeroBackground('/images/hero-background-v2.webp');
+    setCustomHeroPreview(null);
+    showSuccess(isAr ? 'تمت استعادة الخلفية الطبيعية الأصلية لسوس بنجاح' : 'Default hero background restored');
   };
 
   const resetForm = () => {
@@ -431,8 +481,40 @@ export function AdminPanel({
               )}
             </AnimatePresence>
 
-            {/* PRODUCT ADD / EDIT FORM */}
-            <section className={`bg-white rounded-3xl p-6 sm:p-8 border border-brand-brown/5 shadow-md ${isAr ? 'text-right' : 'text-left'}`}>
+            {/* Navigation Tabs */}
+            <div className={`flex items-center gap-3 bg-white p-2 rounded-2xl border border-brand-brown/10 shadow-xs ${isAr ? 'flex-row' : 'flex-row-reverse'}`}>
+              <button
+                type="button"
+                onClick={() => setActiveTab('products')}
+                className={`flex-1 py-3 px-4 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                  activeTab === 'products'
+                    ? 'bg-brand-brown text-white shadow-sm'
+                    : 'text-brand-brown hover:bg-brand-sand/40'
+                }`}
+              >
+                <Plus className="w-4 h-4 text-brand-gold" />
+                <span>{isAr ? 'إدارة المنتجات والمخزون' : language === 'fr' ? 'Gestion des Produits' : 'Products Management'}</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveTab('hero')}
+                className={`flex-1 py-3 px-4 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                  activeTab === 'hero'
+                    ? 'bg-brand-brown text-white shadow-sm'
+                    : 'text-brand-brown hover:bg-brand-sand/40'
+                }`}
+              >
+                <ImageIcon className="w-4 h-4 text-brand-gold" />
+                <span>{isAr ? 'صورة واجهة الموقع (Hero Banner)' : language === 'fr' ? 'Image d’Accueil (Hero)' : 'Hero Banner Image'}</span>
+              </button>
+            </div>
+
+            {/* TAB 1: PRODUCTS MANAGEMENT */}
+            {activeTab === 'products' && (
+              <>
+                {/* PRODUCT ADD / EDIT FORM */}
+                <section className={`bg-white rounded-3xl p-6 sm:p-8 border border-brand-brown/5 shadow-md ${isAr ? 'text-right' : 'text-left'}`}>
               <div className={`flex items-center gap-2 mb-6 border-b border-brand-sand pb-4 ${isAr ? 'flex-row' : 'flex-row-reverse'}`}>
                 <div className="p-2 bg-brand-sand text-brand-brown rounded-lg">
                   <Plus className="w-5 h-5 text-brand-gold" />
@@ -753,9 +835,122 @@ export function AdminPanel({
                 </table>
               </div>
             </section>
-
-          </div>
+          </>
         )}
+
+        {/* TAB 2: HERO BANNER MANAGEMENT */}
+        {activeTab === 'hero' && (
+          <section className={`bg-white rounded-3xl p-6 sm:p-8 border border-brand-brown/5 shadow-md ${isAr ? 'text-right' : 'text-left'} space-y-6`}>
+            <div className={`flex items-center gap-2 border-b border-brand-sand pb-4 ${isAr ? 'flex-row' : 'flex-row-reverse'}`}>
+              <div className="p-2 bg-brand-sand text-brand-brown rounded-lg">
+                <ImageIcon className="w-5 h-5 text-brand-gold" />
+              </div>
+              <div>
+                <h2 className="font-reem text-xl font-bold text-brand-brown">
+                  {isAr ? 'تخصيص صورة واجهة الموقع الرئيسية (Hero Banner)' : 'Customize Hero Banner Image'}
+                </h2>
+                <p className="text-xs text-gray-500">
+                  {isAr ? 'يمكنك رفع أي صورة بدقة عالية من جهازك لتظهر فوراً كخلفية لصفحة الاستقبال' : 'Upload any high-resolution image to set as the homepage background'}
+                </p>
+              </div>
+            </div>
+
+            {/* Preview Frame */}
+            <div className="space-y-3">
+              <label className="block text-xs font-bold text-brand-brown">
+                {isAr ? 'المعاينة الحية لصورة الواجهة:' : 'Hero Background Live Preview:'}
+              </label>
+              
+              <div className="relative rounded-2xl overflow-hidden aspect-21/9 max-h-[340px] bg-brand-dark border-2 border-brand-brown/20 shadow-md">
+                <img 
+                  src={customHeroPreview || heroBackground || '/images/hero-background-v2.webp'} 
+                  alt="Hero Preview" 
+                  className="w-full h-full object-cover object-center brightness-95 contrast-105"
+                  referrerPolicy="no-referrer"
+                />
+                <div className="absolute inset-0 bg-linear-to-r from-brand-dark/80 via-brand-dark/40 to-transparent flex items-center p-6 sm:p-10">
+                  <div className="max-w-md text-white space-y-2">
+                    <span className="inline-block bg-brand-gold/20 text-brand-gold px-3 py-1 rounded-full text-[10px] font-bold border border-brand-gold/30">
+                      {isAr ? 'معاينة الواجهة' : 'Preview'}
+                    </span>
+                    <h3 className="font-reem text-xl sm:text-2xl font-bold text-white leading-tight">
+                      {isAr ? 'عسل وأملو سوس الأصيل' : 'Authentic Moroccan Honey & Amlou'}
+                    </h3>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Upload Trigger Area */}
+            <div 
+              onClick={() => heroFileInputRef.current?.click()}
+              className="border-2 border-dashed border-brand-brown/20 hover:border-brand-gold rounded-2xl p-6 sm:p-8 text-center bg-brand-sand/15 hover:bg-brand-sand/30 cursor-pointer transition-all space-y-3"
+            >
+              <div className="w-12 h-12 bg-brand-sand rounded-full flex items-center justify-center text-brand-gold mx-auto">
+                <ImageIcon className="w-6 h-6" />
+              </div>
+              <div>
+                <span className="block text-sm font-bold text-brand-brown">
+                  {isAr ? 'اضغط هنا لرفع صورة خلفية جديدة من هاتفك أو حاسوبك' : 'Click to select a new background photo'}
+                </span>
+                <span className="block text-xs text-gray-500 mt-1">
+                  {isAr ? 'تدعم صيغ JPG, PNG, WebP بجودة عالية وأبعاد عرضية' : 'Supports JPG, PNG, WebP (Landscape recommended)'}
+                </span>
+              </div>
+              <input
+                type="file"
+                ref={heroFileInputRef}
+                onChange={handleHeroImageChange}
+                accept="image/*"
+                className="hidden"
+              />
+            </div>
+
+            {/* Actions */}
+            <div className={`flex flex-wrap gap-3 justify-between items-center pt-4 border-t border-brand-sand ${isAr ? 'flex-row' : 'flex-row-reverse'}`}>
+              <button
+                type="button"
+                onClick={handleResetHeroBackground}
+                className="px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl transition-colors cursor-pointer text-xs font-bold flex items-center gap-1.5"
+              >
+                <span>{isAr ? 'استعادة الصورة الطبيعية الافتراضية لسوس' : 'Reset to Default Souss Landscape'}</span>
+              </button>
+
+              <div className="flex gap-2">
+                {customHeroPreview && (
+                  <button
+                    type="button"
+                    onClick={() => setCustomHeroPreview(null)}
+                    className="px-4 py-2.5 bg-brand-sand text-brand-brown rounded-xl transition-colors cursor-pointer text-xs font-bold"
+                  >
+                    {isAr ? 'إلغاء التحديد' : 'Cancel Selection'}
+                  </button>
+                )}
+                <button
+                  type="button"
+                  disabled={!customHeroPreview || isSavingHero}
+                  onClick={handleSaveHeroBackground}
+                  className="px-6 py-2.5 bg-brand-gold hover:bg-brand-gold-hover text-brand-brown font-extrabold rounded-xl transition-colors cursor-pointer text-xs flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed shadow-xs"
+                >
+                  {isSavingHero ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>{isAr ? 'جاري الحفظ...' : 'Saving...'}</span>
+                    </>
+                  ) : (
+                    <>
+                      <Save className="w-4 h-4" />
+                      <span>{isAr ? 'حفظ وتطبيق صورة الخلفية' : 'Save and Apply Background'}</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </section>
+        )}
+
+      </div>
+    )}
 
       </main>
 

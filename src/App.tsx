@@ -48,6 +48,18 @@ export default function App() {
     }
   });
 
+  const [heroBackground, setHeroBackground] = useState<string>(() => {
+    try {
+      const saved = localStorage.getItem('tadmamte_hero_bg');
+      if (saved && saved !== '/images/hero-background.webp' && saved !== '/images/hero-background.jpg') {
+        return saved;
+      }
+      return '/images/hero-background-v2.webp';
+    } catch {
+      return '/images/hero-background-v2.webp';
+    }
+  });
+
   const [activeCategory, setActiveCategory] = useState<'all' | 'amlou' | 'argan' | 'honey' | 'cosmetics'>('all');
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isCartOpen, setIsCartOpen] = useState(false);
@@ -214,12 +226,22 @@ export default function App() {
         onAddProduct={handleAddProduct}
         onUpdateProduct={handleUpdateProduct}
         onDeleteProduct={handleDeleteProduct}
+        heroBackground={heroBackground}
+        onUpdateHeroBackground={(newBg) => {
+          setHeroBackground(newBg);
+          try {
+            localStorage.setItem('tadmamte_hero_bg', newBg);
+          } catch (err) {
+            console.error('Failed to save hero bg', err);
+          }
+        }}
       />
 
       {/* Hero Header Section */}
       <Hero
         onScrollToProducts={() => handleScrollTo('products')}
         onScrollToStory={() => handleScrollTo('story')}
+        customBackground={heroBackground}
       />
 
       {/* Trust Badges Bar */}
