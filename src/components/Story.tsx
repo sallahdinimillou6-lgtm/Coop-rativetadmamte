@@ -143,7 +143,7 @@ export function Story() {
                   referrerPolicy="no-referrer"
                   onError={(e) => {
                     e.currentTarget.onerror = null;
-                    e.currentTarget.src = 'https://images.unsplash.com/photo-1590736969955-71cc94801759?auto=format&fit=crop&q=80&w=800';
+                    e.currentTarget.src = '/images/cooperative_hands_craft.webp';
                   }}
                 />
               </picture>

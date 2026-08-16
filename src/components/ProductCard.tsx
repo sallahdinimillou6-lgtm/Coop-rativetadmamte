@@ -39,7 +39,7 @@ export function ProductCard({ product, onAddToCart, onOpenDetails }: ProductCard
           referrerPolicy="no-referrer"
           onError={(e) => {
             e.currentTarget.onerror = null;
-            e.currentTarget.src = 'https://images.unsplash.com/photo-1587049352846-4a222e784d38?auto=format&fit=crop&q=80&w=800';
+            e.currentTarget.src = '/images/honey_flowers.webp';
           }}
         />
         {/* Dark overlay on hover */}

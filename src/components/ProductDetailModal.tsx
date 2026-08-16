@@ -62,7 +62,7 @@ export function ProductDetailModal({ product, onClose, onAddToCart }: ProductDet
               referrerPolicy="no-referrer"
               onError={(e) => {
                 e.currentTarget.onerror = null;
-                e.currentTarget.src = 'https://images.unsplash.com/photo-1587049352846-4a222e784d38?auto=format&fit=crop&q=80&w=800';
+                e.currentTarget.src = '/images/honey_flowers.webp';
               }}
             />
             <div className="absolute inset-0 bg-linear-to-t from-brand-dark/80 via-brand-dark/20 to-transparent" />

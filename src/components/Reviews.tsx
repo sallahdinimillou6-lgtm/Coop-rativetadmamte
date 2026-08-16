@@ -163,7 +163,7 @@ export function Reviews() {
                     referrerPolicy="no-referrer"
                     onError={(e) => {
                       e.currentTarget.onerror = null;
-                      e.currentTarget.src = 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=150&h=150&q=80';
+                      e.currentTarget.src = '/images/avatar_amina.webp';
                     }}
                   />
                   <div>

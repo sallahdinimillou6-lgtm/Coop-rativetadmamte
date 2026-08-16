@@ -22,7 +22,18 @@ export default function App() {
   const [allProducts, setAllProducts] = useState<Product[]>(() => {
     try {
       const saved = localStorage.getItem('tifawin_products');
-      return saved ? JSON.parse(saved) : products;
+      if (saved) {
+        const parsed: Product[] = JSON.parse(saved);
+        // Map default products to the updated high-speed local WebP image paths
+        return parsed.map((p) => {
+          const match = products.find(dp => dp.id === p.id);
+          if (match && (p.image.includes('unsplash') || p.image.includes('premium_honey_jar') || p.image.includes('traditional_amlou_jar') || p.image.endsWith('.jpg'))) {
+            return { ...p, image: match.image };
+          }
+          return p;
+        });
+      }
+      return products;
     } catch {
       return products;
     }

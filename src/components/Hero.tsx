@@ -29,7 +29,7 @@ export function Hero({ onScrollToProducts, onScrollToStory }: HeroProps) {
             referrerPolicy="no-referrer"
             onError={(e) => {
               e.currentTarget.onerror = null;
-              e.currentTarget.src = 'https://images.unsplash.com/photo-1539037116277-4db20889f2d4?auto=format&fit=crop&q=80&w=1600';
+              e.currentTarget.src = '/images/hero-background.webp';
             }}
           />
         </picture>
