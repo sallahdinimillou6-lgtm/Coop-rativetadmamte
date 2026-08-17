@@ -551,7 +551,7 @@ export function AdminPanel({
                           <img 
                             src={imagePreview} 
                             alt="Preview" 
-                            className="w-full h-full object-cover rounded-xl"
+                            className="w-full h-full object-contain rounded-xl"
                           />
                           <div className="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 flex items-center justify-center text-white text-xs font-semibold transition-opacity">
                             {isAr ? 'تغيير الصورة' : 'Change Image'}

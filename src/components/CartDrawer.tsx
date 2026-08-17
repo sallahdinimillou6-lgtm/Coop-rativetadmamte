@@ -168,7 +168,7 @@ export function CartDrawer({
                           <img
                             src={item.product.image}
                             alt={name}
-                            className="w-16 h-16 object-cover rounded-xl border border-brand-brown/5 shrink-0"
+                            className="w-16 h-16 object-contain bg-white rounded-xl border border-brand-brown/5 shrink-0 p-1 shadow-2xs"
                             referrerPolicy="no-referrer"
                             onError={(e) => {
                               e.currentTarget.onerror = null;

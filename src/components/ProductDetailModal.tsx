@@ -53,31 +53,42 @@ export function ProductDetailModal({ product, onClose, onAddToCart }: ProductDet
             <X className="w-5 h-5" />
           </button>
 
-          {/* Banner / Image */}
-          <div className="relative h-64 sm:h-80 bg-brand-sand/50">
+          {/* Product Image Showcase (Full Uncropped View) */}
+          <div className="relative w-full bg-gradient-to-b from-brand-sand/50 via-amber-50/40 to-brand-sand/20 p-6 sm:p-8 flex items-center justify-center min-h-[260px] sm:min-h-[320px] border-b border-brand-sand/60">
+            {/* Category & Badges */}
+            <div className={`absolute top-4 ${isAr ? 'right-4' : 'left-4'} flex flex-col gap-2 z-10`}>
+              <span className="bg-brand-gold text-brand-brown text-xs font-bold px-3 py-1.5 rounded-full shadow-xs inline-flex items-center gap-1.5">
+                {categoryName}
+              </span>
+              {product.isBestSeller && (
+                <span className="bg-brand-brown text-brand-sand text-[11px] font-medium px-2.5 py-1 rounded-full shadow-xs">
+                  {isAr ? 'الأكثر طلباً' : language === 'fr' ? 'Meilleure vente' : 'Bestseller'}
+                </span>
+              )}
+            </div>
+
+            {/* Main Product Image (100% Uncropped with object-contain) */}
             <img
               src={product.image}
               alt={name}
-              className="w-full h-full object-cover"
+              className="max-h-64 sm:max-h-72 w-auto max-w-full object-contain drop-shadow-md select-none transition-transform duration-300 hover:scale-105"
               referrerPolicy="no-referrer"
               onError={(e) => {
                 e.currentTarget.onerror = null;
                 e.currentTarget.src = '/images/honey_flowers.webp';
               }}
             />
-            <div className="absolute inset-0 bg-linear-to-t from-brand-dark/80 via-brand-dark/20 to-transparent" />
-            <div className={`absolute bottom-6 ${isAr ? 'right-6 left-6 text-right' : 'left-6 right-6 text-left'} text-white`}>
-              <span className="bg-brand-gold text-brand-brown text-xs font-bold px-3 py-1 rounded-full mb-2 inline-block">
-                {categoryName}
-              </span>
-              <h2 className="font-reem text-2xl sm:text-3xl text-white drop-shadow-xs">
-                {name}
-              </h2>
-            </div>
           </div>
 
           {/* Body */}
           <div className="p-6 sm:p-8">
+            {/* Title & Header */}
+            <div className="mb-4">
+              <h2 className="font-reem text-2xl sm:text-3xl text-brand-brown font-bold leading-tight mb-1">
+                {name}
+              </h2>
+            </div>
+
             <div className={`flex flex-wrap items-center justify-between gap-4 mb-6 pb-6 border-b border-brand-sand ${isAr ? 'flex-row' : 'flex-row-reverse'}`}>
               <div className="flex items-center gap-2">
                 <span className="text-3xl font-bold text-brand-brown">{product.price}</span>
