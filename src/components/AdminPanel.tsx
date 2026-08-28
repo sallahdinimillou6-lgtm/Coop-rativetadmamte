@@ -21,6 +21,8 @@ import {
   saveHeroBackgroundToFirestore,
   purgeDummyProductsFromFirestore,
   getFirebaseDiagnostics,
+  firebaseConfig,
+  updateCustomFirebaseConfig,
   BANNED_DUMMY_PRODUCT_IDS
 } from '../utils/firebase';
 import {
@@ -59,7 +61,16 @@ export function AdminPanel({
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [password, setPassword] = useState('');
   const [loginError, setLoginError] = useState('');
-  const [activeTab, setActiveTab] = useState<'products' | 'hero'>('products');
+  const [activeTab, setActiveTab] = useState<'products' | 'hero' | 'firebase'>('products');
+
+  // Firebase Custom Config state
+  const [customFbApiKey, setCustomFbApiKey] = useState(firebaseConfig.apiKey || '');
+  const [customFbAuthDomain, setCustomFbAuthDomain] = useState(firebaseConfig.authDomain || '');
+  const [customFbProjectId, setCustomFbProjectId] = useState(firebaseConfig.projectId || '');
+  const [customFbStorageBucket, setCustomFbStorageBucket] = useState(firebaseConfig.storageBucket || '');
+  const [customFbSenderId, setCustomFbSenderId] = useState(firebaseConfig.messagingSenderId || '');
+  const [customFbAppId, setCustomFbAppId] = useState(firebaseConfig.appId || '');
+  const [isSavingFbConfig, setIsSavingFbConfig] = useState(false);
 
   // Hero Background state
   const [customHeroPreview, setCustomHeroPreview] = useState<string | null>(null);
@@ -702,11 +713,11 @@ export function AdminPanel({
             })()}
 
             {/* Navigation Tabs */}
-            <div className={`flex items-center gap-3 bg-white p-2 rounded-2xl border border-brand-brown/10 shadow-xs ${isAr ? 'flex-row' : 'flex-row-reverse'}`}>
+            <div className={`flex flex-wrap items-center gap-3 bg-white p-2 rounded-2xl border border-brand-brown/10 shadow-xs ${isAr ? 'flex-row' : 'flex-row-reverse'}`}>
               <button
                 type="button"
                 onClick={() => setActiveTab('products')}
-                className={`flex-1 py-3 px-4 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                className={`flex-1 min-w-[140px] py-3 px-4 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 cursor-pointer ${
                   activeTab === 'products'
                     ? 'bg-brand-brown text-white shadow-sm'
                     : 'text-brand-brown hover:bg-brand-sand/40'
@@ -719,14 +730,27 @@ export function AdminPanel({
               <button
                 type="button"
                 onClick={() => setActiveTab('hero')}
-                className={`flex-1 py-3 px-4 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                className={`flex-1 min-w-[140px] py-3 px-4 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 cursor-pointer ${
                   activeTab === 'hero'
                     ? 'bg-brand-brown text-white shadow-sm'
                     : 'text-brand-brown hover:bg-brand-sand/40'
                 }`}
               >
                 <ImageIcon className="w-4 h-4 text-brand-gold" />
-                <span>{isAr ? 'صورة واجهة الموقع (Hero Banner)' : language === 'fr' ? 'Image d’Accueil (Hero)' : 'Hero Banner Image'}</span>
+                <span>{isAr ? 'صورة الواجهة (Hero)' : language === 'fr' ? 'Image d’Accueil' : 'Hero Image'}</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveTab('firebase')}
+                className={`flex-1 min-w-[140px] py-3 px-4 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                  activeTab === 'firebase'
+                    ? 'bg-brand-brown text-white shadow-sm'
+                    : 'text-brand-brown hover:bg-brand-sand/40'
+                }`}
+              >
+                <Database className="w-4 h-4 text-brand-gold" />
+                <span>{isAr ? 'إعدادات Firebase السحابية' : language === 'fr' ? 'Configuration Firebase' : 'Firebase Settings'}</span>
               </button>
             </div>
 
@@ -1233,6 +1257,136 @@ export function AdminPanel({
                   )}
                 </button>
               </div>
+            </div>
+          </section>
+        )}
+
+        {/* TAB 3: FIREBASE CLOUD CONFIGURATION */}
+        {activeTab === 'firebase' && (
+          <section className={`bg-white rounded-3xl p-6 sm:p-8 border border-brand-brown/5 shadow-md space-y-6 ${isAr ? 'text-right' : 'text-left'}`}>
+            <div className={`flex items-center gap-2 border-b border-brand-sand pb-4 ${isAr ? 'flex-row' : 'flex-row-reverse'}`}>
+              <div className="p-2 bg-brand-sand text-brand-brown rounded-lg">
+                <Database className="w-5 h-5 text-brand-gold" />
+              </div>
+              <div>
+                <h2 className="font-reem text-xl font-bold text-brand-brown">
+                  {isAr ? 'إعدادات ربط Firebase Firestore السحابية' : 'Firebase Cloud Configuration'}
+                </h2>
+                <p className="text-xs text-gray-500 mt-0.5">
+                  {isAr 
+                    ? 'يمكنك ضبط ومزامنة قاعدة البيانات السحابية مباشرة ليتم حفظ المنتجات لجميع الزوار على كل الهواتف والأجهزة فوراً.' 
+                    : 'Configure Firebase settings directly to enable real-time sync across all devices.'}
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <label className="block text-xs font-bold text-brand-brown">Project ID:</label>
+                <input
+                  type="text"
+                  value={customFbProjectId}
+                  onChange={(e) => setCustomFbProjectId(e.target.value)}
+                  placeholder="cooperative-tadmamte"
+                  className="w-full px-4 py-2.5 rounded-xl border border-brand-brown/20 focus:border-brand-gold outline-none text-xs font-mono"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="block text-xs font-bold text-brand-brown">API Key:</label>
+                <input
+                  type="text"
+                  value={customFbApiKey}
+                  onChange={(e) => setCustomFbApiKey(e.target.value)}
+                  placeholder="AIzaSy..."
+                  className="w-full px-4 py-2.5 rounded-xl border border-brand-brown/20 focus:border-brand-gold outline-none text-xs font-mono"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="block text-xs font-bold text-brand-brown">Auth Domain:</label>
+                <input
+                  type="text"
+                  value={customFbAuthDomain}
+                  onChange={(e) => setCustomFbAuthDomain(e.target.value)}
+                  placeholder="cooperative-tadmamte.firebaseapp.com"
+                  className="w-full px-4 py-2.5 rounded-xl border border-brand-brown/20 focus:border-brand-gold outline-none text-xs font-mono"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="block text-xs font-bold text-brand-brown">Storage Bucket:</label>
+                <input
+                  type="text"
+                  value={customFbStorageBucket}
+                  onChange={(e) => setCustomFbStorageBucket(e.target.value)}
+                  placeholder="cooperative-tadmamte.firebasestorage.app"
+                  className="w-full px-4 py-2.5 rounded-xl border border-brand-brown/20 focus:border-brand-gold outline-none text-xs font-mono"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="block text-xs font-bold text-brand-brown">Messaging Sender ID:</label>
+                <input
+                  type="text"
+                  value={customFbSenderId}
+                  onChange={(e) => setCustomFbSenderId(e.target.value)}
+                  placeholder="1234567890"
+                  className="w-full px-4 py-2.5 rounded-xl border border-brand-brown/20 focus:border-brand-gold outline-none text-xs font-mono"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="block text-xs font-bold text-brand-brown">App ID:</label>
+                <input
+                  type="text"
+                  value={customFbAppId}
+                  onChange={(e) => setCustomFbAppId(e.target.value)}
+                  placeholder="1:1234567890:web:abcdef"
+                  className="w-full px-4 py-2.5 rounded-xl border border-brand-brown/20 focus:border-brand-gold outline-none text-xs font-mono"
+                />
+              </div>
+            </div>
+
+            <div className={`flex flex-wrap gap-3 justify-between items-center pt-4 border-t border-brand-sand ${isAr ? 'flex-row' : 'flex-row-reverse'}`}>
+              <button
+                type="button"
+                onClick={handleSyncAllToFirestore}
+                disabled={isSaving}
+                className="px-4 py-2.5 bg-brand-brown text-white font-bold rounded-xl transition-colors cursor-pointer text-xs flex items-center gap-1.5 disabled:opacity-50"
+              >
+                {isSaving ? <Loader2 className="w-4 h-4 animate-spin text-brand-gold" /> : <Cloud className="w-4 h-4 text-brand-gold" />}
+                <span>{isAr ? 'إرسال ومزامنة المنتجات الحالية للسحابة' : 'Push Current Products to Cloud'}</span>
+              </button>
+
+              <button
+                type="button"
+                disabled={isSavingFbConfig || !customFbProjectId || !customFbApiKey}
+                onClick={() => {
+                  setIsSavingFbConfig(true);
+                  updateCustomFirebaseConfig({
+                    apiKey: customFbApiKey,
+                    authDomain: customFbAuthDomain || `${customFbProjectId}.firebaseapp.com`,
+                    projectId: customFbProjectId,
+                    storageBucket: customFbStorageBucket || `${customFbProjectId}.firebasestorage.app`,
+                    messagingSenderId: customFbSenderId,
+                    appId: customFbAppId,
+                  });
+                }}
+                className="px-6 py-2.5 bg-brand-gold hover:bg-brand-gold-hover text-brand-brown font-extrabold rounded-xl transition-colors cursor-pointer text-xs flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed shadow-xs"
+              >
+                {isSavingFbConfig ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>{isAr ? 'جاري الحفظ والاتصال...' : 'Connecting...'}</span>
+                  </>
+                ) : (
+                  <>
+                    <Save className="w-4 h-4" />
+                    <span>{isAr ? 'حفظ وتفعيل الاتصال السحابي فوراً' : 'Save & Connect Live'}</span>
+                  </>
+                )}
+              </button>
             </div>
           </section>
         )}

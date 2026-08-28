@@ -19,41 +19,68 @@ import {
 } from 'firebase/storage';
 import { Product } from '../types';
 
-// Check if Firebase configuration environment variables are present
+// Load Firebase configuration from environment variables or custom runtime config
 const metaEnv = (import.meta as any).env || {};
 
+function getStoredFirebaseConfig() {
+  try {
+    const saved = localStorage.getItem('tadmamte_firebase_custom_config');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (parsed && parsed.projectId && parsed.apiKey) {
+        return parsed;
+      }
+    }
+  } catch {}
+  return null;
+}
+
+const customConfig = getStoredFirebaseConfig();
+
 const firebaseConfig = {
-  apiKey: metaEnv.VITE_FIREBASE_API_KEY,
-  authDomain: metaEnv.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: metaEnv.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: metaEnv.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: metaEnv.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: metaEnv.VITE_FIREBASE_APP_ID,
+  apiKey: customConfig?.apiKey || metaEnv.VITE_FIREBASE_API_KEY,
+  authDomain: customConfig?.authDomain || metaEnv.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: customConfig?.projectId || metaEnv.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: customConfig?.storageBucket || metaEnv.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: customConfig?.messagingSenderId || metaEnv.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: customConfig?.appId || metaEnv.VITE_FIREBASE_APP_ID,
 };
 
-const isFirebaseConfigured = !!(
+let isFirebaseConfigured = !!(
   firebaseConfig.apiKey &&
   firebaseConfig.projectId &&
   firebaseConfig.storageBucket
 );
 
-let app;
+let app: any = null;
 let db: any = null;
 let storage: any = null;
 
-if (isFirebaseConfigured) {
-  try {
-    app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
-    db = getFirestore(app);
-    storage = getStorage(app);
-    console.log('Firebase initialized successfully!');
-  } catch (error) {
-    console.error('Error initializing Firebase:', error);
+function initFirebase() {
+  if (isFirebaseConfigured) {
+    try {
+      app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
+      db = getFirestore(app);
+      storage = getStorage(app);
+      console.log('Firebase initialized successfully for project:', firebaseConfig.projectId);
+    } catch (error) {
+      console.error('Error initializing Firebase:', error);
+    }
   }
-} else {
-  console.warn(
-    'Firebase environment variables are missing. Falling back to local storage.'
-  );
+}
+
+initFirebase();
+
+export function updateCustomFirebaseConfig(config: typeof firebaseConfig) {
+  try {
+    localStorage.setItem('tadmamte_firebase_custom_config', JSON.stringify(config));
+    Object.assign(firebaseConfig, config);
+    isFirebaseConfigured = !!(firebaseConfig.apiKey && firebaseConfig.projectId && firebaseConfig.storageBucket);
+    initFirebase();
+    window.location.reload();
+  } catch (err) {
+    console.error('Failed to save custom Firebase config:', err);
+  }
 }
 
 export { isFirebaseConfigured, db, storage, firebaseConfig };
