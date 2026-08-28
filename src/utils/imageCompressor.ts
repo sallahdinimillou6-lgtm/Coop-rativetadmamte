@@ -16,9 +16,9 @@ export async function compressImageFile(
   options: CompressionOptions = {}
 ): Promise<{ file: File; dataUrl: string; size: number }> {
   const {
-    maxWidth = 1200,
-    maxHeight = 1200,
-    quality = 0.82,
+    maxWidth = 960,
+    maxHeight = 960,
+    quality = 0.78,
     mimeType = 'image/webp'
   } = options;
 
@@ -56,15 +56,15 @@ export async function compressImageFile(
         canvas.width = width;
         canvas.height = height;
 
-        const ctx = canvas.getContext('2d');
+        const ctx = canvas.getContext('2d', { alpha: false });
         if (!ctx) {
           reject(new Error('Could not initialize canvas context'));
           return;
         }
 
-        // Draw image smoothly
+        // Draw image fast and clean
         ctx.imageSmoothingEnabled = true;
-        ctx.imageSmoothingQuality = 'high';
+        ctx.imageSmoothingQuality = 'medium';
         ctx.drawImage(img, 0, 0, width, height);
 
         // Check if browser supports WebP canvas export, fallback to JPEG
