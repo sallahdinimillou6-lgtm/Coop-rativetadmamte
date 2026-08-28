@@ -507,52 +507,12 @@ export function AdminPanel({
         productData.imageMetadata = finalImageMetadata;
       }
 
-      // Optimistically update UI immediately for zero latency
+      // Optimistically update UI immediately for instant 0ms latency
       if (editingId) {
         onUpdateProduct(productData);
       } else {
         onAddProduct(productData);
       }
-
-      // Parallel Cloud Sync: Push to Firestore and Server DB concurrently with timeout
-      const syncPromises: Promise<any>[] = [];
-
-      // 1. Central Server DB Save
-      syncPromises.push(
-        saveServerProduct(productData).catch(err => console.warn('Server save warning:', err))
-      );
-
-      // 2. Firestore Cloud Save
-      if (isFirebaseConfigured) {
-        syncPromises.push(
-          saveProductToFirestore(productData).catch(err => console.warn('Firestore save warning:', err))
-        );
-      }
-
-      // 3. Optional Cloud Storage Background Upload (only if full public HTTPS URL)
-      if (imageFile && isFirebaseConfigured) {
-        // Upload to Firebase Storage with a 4s timeout
-        const storagePromise = Promise.race([
-          uploadProductImage(productId, imageFile),
-          new Promise<null>((_, reject) => setTimeout(() => reject(new Error('Storage timeout')), 4000))
-        ]).then(uploadRes => {
-          if (uploadRes && uploadRes.url && uploadRes.url.startsWith('https://')) {
-            productData.image = uploadRes.url;
-            productData.imageMetadata = uploadRes.metadata;
-            if (editingId) onUpdateProduct(productData);
-            else onAddProduct(productData);
-            saveProductToFirestore(productData).catch(() => {});
-          }
-        }).catch(err => console.warn('Firebase storage background upload:', err));
-
-        syncPromises.push(storagePromise);
-      }
-
-      // Wait maximum 1.2 seconds for primary sync confirmation
-      await Promise.race([
-        Promise.allSettled(syncPromises),
-        new Promise(resolve => setTimeout(resolve, 1200))
-      ]);
 
       showSuccess(
         editingId
@@ -561,6 +521,41 @@ export function AdminPanel({
       );
 
       resetForm();
+      setIsSaving(false);
+
+      // Background Cloud Sync: Push to Firestore and Server DB concurrently without freezing UI
+      (async () => {
+        try {
+          const syncTasks: Promise<any>[] = [];
+          
+          if (isFirebaseConfigured) {
+            syncTasks.push(saveProductToFirestore(productData));
+          }
+          syncTasks.push(saveServerProduct(productData));
+
+          if (imageFile && isFirebaseConfigured) {
+            syncTasks.push(
+              uploadProductImage(productId, imageFile)
+                .then(uploadRes => {
+                  if (uploadRes && uploadRes.url && uploadRes.url.startsWith('https://')) {
+                    productData.image = uploadRes.url;
+                    productData.imageMetadata = uploadRes.metadata;
+                    if (editingId) onUpdateProduct(productData);
+                    else onAddProduct(productData);
+                    saveProductToFirestore(productData).catch(() => {});
+                  }
+                })
+                .catch(err => console.warn('Background storage upload:', err))
+            );
+          }
+
+          await Promise.allSettled(syncTasks);
+        } catch (syncErr) {
+          console.warn('Background sync warning:', syncErr);
+        }
+      })();
+
+      return;
     } catch (error: any) {
       console.error('Failed to save product:', error);
       setFormError(isAr ? `فشل حفظ المنتج: ${error?.message || 'حدث خطأ في الاتصال بقاعدة البيانات'}` : `Failed to save product: ${error?.message || 'Database error'}`);

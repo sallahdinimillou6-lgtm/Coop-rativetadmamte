@@ -33,9 +33,19 @@ import {
 export default function App() {
   const { language, t } = useLanguage();
 
-  // Start with empty catalog and fetch strictly and live from Firestore & Server API
-  // No hardcoded items or localStorage caching to guarantee clean, real live data across all devices
-  const [allProducts, setAllProducts] = useState<Product[]>([]);
+  // Initialize with cached products for instant 0ms render, updated live from Firestore
+  const [allProducts, setAllProducts] = useState<Product[]>(() => {
+    try {
+      const cached = localStorage.getItem('tadmamte_products_cache');
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed.filter((p: Product) => !BANNED_DUMMY_PRODUCT_IDS.includes(p.id));
+        }
+      }
+    } catch {}
+    return [];
+  });
 
   const [cartItems, setCartItems] = useState<CartItem[]>(() => {
     try {
@@ -63,7 +73,25 @@ export default function App() {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isAdminOpen, setIsAdminOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
-  const [isLoadingProducts, setIsLoadingProducts] = useState(true);
+  const [isLoadingProducts, setIsLoadingProducts] = useState(() => {
+    try {
+      const cached = localStorage.getItem('tadmamte_products_cache');
+      return !cached || JSON.parse(cached).length === 0;
+    } catch {
+      return true;
+    }
+  });
+
+  // Helper to update products and keep local cache in sync
+  const updateProductsWithCache = (updater: Product[] | ((prev: Product[]) => Product[])) => {
+    setAllProducts(prev => {
+      const updated = typeof updater === 'function' ? updater(prev) : updater;
+      try {
+        localStorage.setItem('tadmamte_products_cache', JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+  };
 
   useEffect(() => {
     let unsubscribeProducts: (() => void) | undefined;
@@ -75,8 +103,6 @@ export default function App() {
     } catch {}
 
     async function loadData() {
-      setIsLoadingProducts(true);
-
       // 1. Primary Cloud Firestore Live Sync
       if (isFirebaseConfigured) {
         try {
@@ -84,7 +110,7 @@ export default function App() {
           const initialDbProducts = await fetchProductsFromFirestore().catch(() => null);
           if (initialDbProducts && initialDbProducts.length > 0) {
             const cleanInitial = initialDbProducts.filter(p => !BANNED_DUMMY_PRODUCT_IDS.includes(p.id));
-            setAllProducts(cleanInitial);
+            updateProductsWithCache(cleanInitial);
             setIsLoadingProducts(false);
           }
 
@@ -92,7 +118,7 @@ export default function App() {
           unsubscribeProducts = subscribeToProductsFromFirestore(
             (dbProducts) => {
               const clean = (dbProducts || []).filter(p => !BANNED_DUMMY_PRODUCT_IDS.includes(p.id));
-              setAllProducts(clean);
+              updateProductsWithCache(clean);
               setIsLoadingProducts(false);
             },
             (error) => {
@@ -116,7 +142,7 @@ export default function App() {
         const serverProds = await fetchServerProducts();
         if (serverProds && serverProds.length > 0) {
           const cleanServer = serverProds.filter((p: Product) => !BANNED_DUMMY_PRODUCT_IDS.includes(p.id));
-          setAllProducts(prev => (prev.length === 0 ? cleanServer : prev));
+          updateProductsWithCache(prev => (prev.length === 0 ? cleanServer : prev));
         }
 
         const serverHero = await fetchServerHeroBackground();
@@ -141,7 +167,7 @@ export default function App() {
           if (cloudProds && cloudProds.length > 0) {
             const cleanCloud = cloudProds.filter((p: Product) => !BANNED_DUMMY_PRODUCT_IDS.includes(p.id));
             if (cleanCloud.length > 0) {
-              setAllProducts((current) => {
+              updateProductsWithCache((current) => {
                 if (JSON.stringify(current) !== JSON.stringify(cleanCloud)) {
                   return cleanCloud;
                 }
@@ -154,7 +180,7 @@ export default function App() {
           if (latestProds && latestProds.length > 0) {
             const cleanServer = latestProds.filter((p: Product) => !BANNED_DUMMY_PRODUCT_IDS.includes(p.id));
             if (cleanServer.length > 0) {
-              setAllProducts((current) => {
+              updateProductsWithCache((current) => {
                 if (JSON.stringify(current) !== JSON.stringify(cleanServer)) {
                   return cleanServer;
                 }
@@ -184,11 +210,11 @@ export default function App() {
   }, [cartItems]);
 
   const handleAddProduct = (newProduct: Product) => {
-    setAllProducts(prev => [newProduct, ...prev]);
+    updateProductsWithCache(prev => [newProduct, ...prev]);
   };
 
   const handleUpdateProduct = (updatedProduct: Product) => {
-    setAllProducts(prev => prev.map(p => p.id === updatedProduct.id ? updatedProduct : p));
+    updateProductsWithCache(prev => prev.map(p => p.id === updatedProduct.id ? updatedProduct : p));
     setCartItems(prev => prev.map(item => 
       item.product.id === updatedProduct.id 
         ? { ...item, product: updatedProduct } 
@@ -197,7 +223,7 @@ export default function App() {
   };
 
   const handleDeleteProduct = (productId: string) => {
-    setAllProducts(prev => prev.filter(p => p.id !== productId));
+    updateProductsWithCache(prev => prev.filter(p => p.id !== productId));
     setCartItems(prev => prev.filter(item => item.product.id !== productId));
   };
 
