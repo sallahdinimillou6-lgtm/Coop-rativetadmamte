@@ -35,15 +35,24 @@ function getStoredFirebaseConfig() {
   return null;
 }
 
+const DEFAULT_FIREBASE_CONFIG = {
+  apiKey: "AIzaSyDPvX5DkZHCFp5mo-qHFdHN2SsEFw2q9IU",
+  authDomain: "vivid-solution-tk7s0.firebaseapp.com",
+  projectId: "vivid-solution-tk7s0",
+  storageBucket: "vivid-solution-tk7s0.firebasestorage.app",
+  messagingSenderId: "358663154812",
+  appId: "1:358663154812:web:56d1140f9d18b72632adf9",
+};
+
 const customConfig = getStoredFirebaseConfig();
 
 const firebaseConfig = {
-  apiKey: customConfig?.apiKey || metaEnv.VITE_FIREBASE_API_KEY,
-  authDomain: customConfig?.authDomain || metaEnv.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: customConfig?.projectId || metaEnv.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: customConfig?.storageBucket || metaEnv.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: customConfig?.messagingSenderId || metaEnv.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: customConfig?.appId || metaEnv.VITE_FIREBASE_APP_ID,
+  apiKey: customConfig?.apiKey || metaEnv.VITE_FIREBASE_API_KEY || DEFAULT_FIREBASE_CONFIG.apiKey,
+  authDomain: customConfig?.authDomain || metaEnv.VITE_FIREBASE_AUTH_DOMAIN || DEFAULT_FIREBASE_CONFIG.authDomain,
+  projectId: customConfig?.projectId || metaEnv.VITE_FIREBASE_PROJECT_ID || DEFAULT_FIREBASE_CONFIG.projectId,
+  storageBucket: customConfig?.storageBucket || metaEnv.VITE_FIREBASE_STORAGE_BUCKET || DEFAULT_FIREBASE_CONFIG.storageBucket,
+  messagingSenderId: customConfig?.messagingSenderId || metaEnv.VITE_FIREBASE_MESSAGING_SENDER_ID || DEFAULT_FIREBASE_CONFIG.messagingSenderId,
+  appId: customConfig?.appId || metaEnv.VITE_FIREBASE_APP_ID || DEFAULT_FIREBASE_CONFIG.appId,
 };
 
 let isFirebaseConfigured = !!(
