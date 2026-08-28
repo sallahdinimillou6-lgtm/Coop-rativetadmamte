@@ -1,0 +1,89 @@
+{
+  "entities": {
+    "Product": {
+      "title": "Product",
+      "description": "A cooperative natural product item",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique product identifier"
+        },
+        "name": {
+          "type": "string",
+          "description": "Product display name"
+        },
+        "nameAr": {
+          "type": "string",
+          "description": "Arabic name"
+        },
+        "nameFr": {
+          "type": "string",
+          "description": "French name"
+        },
+        "category": {
+          "type": "string",
+          "enum": ["honey", "amlou", "argan", "cosmetics"]
+        },
+        "price": {
+          "type": "number",
+          "description": "Price in MAD"
+        },
+        "shippingCost": {
+          "type": "number",
+          "description": "Shipping cost in MAD"
+        },
+        "description": {
+          "type": "string",
+          "description": "Short description"
+        },
+        "weight": {
+          "type": "string",
+          "description": "Unit weight e.g. 500g"
+        },
+        "image": {
+          "type": "string",
+          "description": "Image URL or data URI"
+        },
+        "isBestSeller": {
+          "type": "boolean",
+          "description": "Whether product is best seller"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "ISO timestamp created"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "ISO timestamp updated"
+        }
+      },
+      "required": ["name", "price", "category", "image"]
+    },
+    "Setting": {
+      "title": "Setting",
+      "description": "Global application setting such as hero background",
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string",
+          "description": "Image URL for hero banner"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "ISO timestamp"
+        }
+      }
+    }
+  },
+  "firestore": {
+    "/products/{productId}": {
+      "schema": "Product",
+      "description": "Public catalog products accessible by all visitors and managed by cooperative admin"
+    },
+    "/settings/{settingId}": {
+      "schema": "Setting",
+      "description": "Global settings such as hero background"
+    }
+  }
+}
