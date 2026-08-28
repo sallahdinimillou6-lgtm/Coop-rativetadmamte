@@ -481,7 +481,7 @@ export function AdminPanel({
         categoryAr: categoryArMap[category],
         categoryFr: categoryFrMap[category],
         categoryEn: categoryEnMap[category],
-        price: Number(price),
+        price: Number(price) || 0,
         shippingCost: Number(shippingCost) || 0,
         description: description.trim(),
         descriptionAr: description.trim(),
@@ -495,14 +495,17 @@ export function AdminPanel({
         benefitsAr: parsedBenefits.length > 0 ? parsedBenefits : [isAr ? 'طبيعي وصحي ١٠٠٪' : '100% naturel'],
         benefitsFr: parsedBenefits.length > 0 ? parsedBenefits : ['100% naturel et sain'],
         benefitsEn: parsedBenefits.length > 0 ? parsedBenefits : ['100% natural and healthy'],
-        weight,
-        weightAr: weight,
-        weightFr: weight,
-        weightEn: weight,
+        weight: weight || (isAr ? '٥٠٠ غرام' : '500g'),
+        weightAr: weight || (isAr ? '٥٠٠ غرام' : '500g'),
+        weightFr: weight || '500g',
+        weightEn: weight || '500g',
         image: finalImageUrl,
-        imageMetadata: finalImageMetadata,
-        isBestSeller
+        isBestSeller: Boolean(isBestSeller)
       };
+
+      if (finalImageMetadata && typeof finalImageMetadata === 'object' && Object.keys(finalImageMetadata).length > 0) {
+        productData.imageMetadata = finalImageMetadata;
+      }
 
       // Optimistically update UI immediately for zero latency
       if (editingId) {

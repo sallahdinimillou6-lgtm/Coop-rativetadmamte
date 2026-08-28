@@ -368,22 +368,109 @@ export function subscribeToProductsFromFirestore(
 }
 
 /**
+ * Recursively cleans an object to remove any keys with undefined values,
+ * ensuring Firestore setDoc/updateDoc never fails with 'Unsupported field value: undefined'.
+ */
+export function sanitizeForFirestore<T = any>(obj: T): T {
+  if (obj === null || obj === undefined) {
+    return null as any;
+  }
+  if (Array.isArray(obj)) {
+    return obj
+      .filter((item) => item !== undefined)
+      .map((item) => sanitizeForFirestore(item)) as any;
+  }
+  if (typeof obj === 'object') {
+    const cleaned: Record<string, any> = {};
+    for (const [key, value] of Object.entries(obj)) {
+      if (value !== undefined) {
+        if (typeof value === 'object' && value !== null) {
+          const nested = sanitizeForFirestore(value);
+          if (Array.isArray(nested) || (typeof nested === 'object' && Object.keys(nested).length > 0)) {
+            cleaned[key] = nested;
+          }
+        } else {
+          cleaned[key] = value;
+        }
+      }
+    }
+    return cleaned as T;
+  }
+  return obj;
+}
+
+/**
  * Saves or updates a product in Firestore.
+ * Verifies required fields and strips any undefined or empty optional fields.
  */
 export async function saveProductToFirestore(product: Product): Promise<void> {
   if (!isFirebaseConfigured || !db) {
     throw new Error('Firebase is not configured.');
   }
 
+  if (!product || !product.id || !product.name) {
+    throw new Error('بيانات المنتج غير صالحة (المعرف واسم المنتج مطلوبان).');
+  }
+
   try {
     const docRef = doc(db, 'products', product.id);
-    const dataToSave = {
-      ...product,
+
+    // Build plain product document
+    const cleanProductObj: Record<string, any> = {
+      id: String(product.id),
+      name: String(product.name).trim(),
+      nameAr: product.nameAr ? String(product.nameAr).trim() : String(product.name).trim(),
+      nameFr: product.nameFr ? String(product.nameFr).trim() : String(product.name).trim(),
+      nameEn: product.nameEn ? String(product.nameEn).trim() : String(product.name).trim(),
+      category: product.category || 'honey',
+      categoryAr: product.categoryAr || 'عسل طبيعي',
+      categoryFr: product.categoryFr || 'Miel Pur',
+      categoryEn: product.categoryEn || 'Natural Honey',
+      price: Number(product.price) || 0,
+      description: product.description || '',
+      descriptionAr: product.descriptionAr || product.description || '',
+      descriptionFr: product.descriptionFr || product.description || '',
+      descriptionEn: product.descriptionEn || product.description || '',
+      longDescription: product.longDescription || product.description || '',
+      longDescriptionAr: product.longDescriptionAr || product.descriptionAr || '',
+      longDescriptionFr: product.longDescriptionFr || product.descriptionFr || '',
+      longDescriptionEn: product.longDescriptionEn || product.descriptionEn || '',
+      benefits: Array.isArray(product.benefits) && product.benefits.length > 0 ? product.benefits : ['طبيعي وصحي'],
+      benefitsAr: Array.isArray(product.benefitsAr) && product.benefitsAr.length > 0 ? product.benefitsAr : ['طبيعي وصحي'],
+      benefitsFr: Array.isArray(product.benefitsFr) && product.benefitsFr.length > 0 ? product.benefitsFr : ['100% Naturel'],
+      benefitsEn: Array.isArray(product.benefitsEn) && product.benefitsEn.length > 0 ? product.benefitsEn : ['100% Natural'],
+      weight: product.weight || '500 غرام',
+      weightAr: product.weightAr || product.weight || '500 غرام',
+      weightFr: product.weightFr || product.weight || '500g',
+      weightEn: product.weightEn || product.weight || '500g',
+      image: product.image || '',
+      isBestSeller: Boolean(product.isBestSeller),
       createdAt: (product as any).createdAt || new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
-    await setDoc(docRef, dataToSave, { merge: true });
-    console.log('Product saved to Firestore successfully:', product.id);
+
+    if (product.shippingCost !== undefined && product.shippingCost !== null) {
+      cleanProductObj.shippingCost = Number(product.shippingCost);
+    }
+
+    // Only add imageMetadata if it is a defined object with non-undefined properties
+    if (product.imageMetadata && typeof product.imageMetadata === 'object') {
+      const metaObj: Record<string, any> = {};
+      if (product.imageMetadata.size !== undefined) metaObj.size = Number(product.imageMetadata.size);
+      if (product.imageMetadata.type !== undefined) metaObj.type = String(product.imageMetadata.type);
+      if (product.imageMetadata.uploadedAt !== undefined) metaObj.uploadedAt = String(product.imageMetadata.uploadedAt);
+      if (product.imageMetadata.originalName !== undefined) metaObj.originalName = String(product.imageMetadata.originalName);
+      
+      if (Object.keys(metaObj).length > 0) {
+        cleanProductObj.imageMetadata = metaObj;
+      }
+    }
+
+    // Deep sanitize to guarantee no undefined exists anywhere
+    const sanitizedData = sanitizeForFirestore(cleanProductObj);
+
+    await setDoc(docRef, sanitizedData, { merge: true });
+    console.log('Product saved to Firestore successfully without undefined fields:', product.id);
   } catch (error) {
     console.error('Error saving product to Firestore:', error);
     throw error;
