@@ -42,6 +42,7 @@ const DEFAULT_FIREBASE_CONFIG = {
   storageBucket: "vivid-solution-tk7s0.firebasestorage.app",
   messagingSenderId: "358663154812",
   appId: "1:358663154812:web:56d1140f9d18b72632adf9",
+  firestoreDatabaseId: "ai-studio-cooprativetadmam-7c16c26d-924b-4ef2-9d41-d9f70214780f"
 };
 
 const customConfig = getStoredFirebaseConfig();
@@ -53,6 +54,7 @@ const firebaseConfig = {
   storageBucket: customConfig?.storageBucket || metaEnv.VITE_FIREBASE_STORAGE_BUCKET || DEFAULT_FIREBASE_CONFIG.storageBucket,
   messagingSenderId: customConfig?.messagingSenderId || metaEnv.VITE_FIREBASE_MESSAGING_SENDER_ID || DEFAULT_FIREBASE_CONFIG.messagingSenderId,
   appId: customConfig?.appId || metaEnv.VITE_FIREBASE_APP_ID || DEFAULT_FIREBASE_CONFIG.appId,
+  firestoreDatabaseId: customConfig?.firestoreDatabaseId || metaEnv.VITE_FIREBASE_DATABASE_ID || DEFAULT_FIREBASE_CONFIG.firestoreDatabaseId,
 };
 
 let isFirebaseConfigured = !!(
@@ -69,7 +71,9 @@ function initFirebase() {
   if (isFirebaseConfigured) {
     try {
       app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
-      db = getFirestore(app);
+      db = (firebaseConfig as any).firestoreDatabaseId 
+        ? getFirestore(app, (firebaseConfig as any).firestoreDatabaseId)
+        : getFirestore(app);
       storage = getStorage(app);
       console.log('Firebase initialized successfully for project:', firebaseConfig.projectId);
     } catch (error) {
@@ -80,7 +84,7 @@ function initFirebase() {
 
 initFirebase();
 
-export function updateCustomFirebaseConfig(config: typeof firebaseConfig) {
+export function updateCustomFirebaseConfig(config: Partial<typeof firebaseConfig>) {
   try {
     localStorage.setItem('tadmamte_firebase_custom_config', JSON.stringify(config));
     Object.assign(firebaseConfig, config);
