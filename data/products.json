@@ -1,1 +1,11 @@
-[]
+[
+  {
+    "id": "test_sync_check",
+    "nameFr": "Test Sync",
+    "price": 150,
+    "name": "اختبار المزامنة",
+    "category": "honey",
+    "image": "https://images.unsplash.com/photo-1587049352846-4a222e784d38?auto=format&fit=crop&w=600&q=80",
+    "createdAt": "2026-08-28T20:25:38.571Z"
+  }
+]

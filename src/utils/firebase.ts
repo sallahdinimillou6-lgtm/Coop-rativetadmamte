@@ -261,6 +261,7 @@ export async function deleteProductImage(imageUrl: string): Promise<void> {
 
 /**
  * Fetches all products from Firestore "products" collection.
+ * Uses robust collection fetch with in-memory sorting to prevent missing-index errors on mobile.
  */
 export async function fetchProductsFromFirestore(): Promise<Product[]> {
   if (!isFirebaseConfigured || !db) {
@@ -269,8 +270,7 @@ export async function fetchProductsFromFirestore(): Promise<Product[]> {
 
   try {
     const productsCol = collection(db, 'products');
-    const q = query(productsCol, orderBy('createdAt', 'desc'));
-    const snapshot = await getDocs(q);
+    const snapshot = await getDocs(productsCol);
     const list: Product[] = [];
     
     snapshot.forEach((docSnapshot) => {
@@ -279,6 +279,13 @@ export async function fetchProductsFromFirestore(): Promise<Product[]> {
         id: docSnapshot.id,
         ...data,
       } as Product);
+    });
+
+    // In-memory sort by createdAt (descending)
+    list.sort((a: any, b: any) => {
+      const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      return timeB - timeA;
     });
 
     return list;

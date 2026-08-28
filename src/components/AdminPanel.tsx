@@ -526,40 +526,23 @@ export function AdminPanel({
         );
       }
 
-      // 3. Fast Parallel Image Upload if file exists
-      if (imageFile) {
-        syncPromises.push(
-          uploadImageToServer(imageFile, productId)
-            .then(serverImgUrl => {
-              if (serverImgUrl && serverImgUrl !== productData.image) {
-                productData.image = serverImgUrl;
-                if (editingId) onUpdateProduct(productData);
-                else onAddProduct(productData);
-                if (isFirebaseConfigured) {
-                  saveProductToFirestore(productData).catch(() => {});
-                }
-              }
-            })
-            .catch(e => console.warn('Fast server image upload warning:', e))
-        );
+      // 3. Optional Cloud Storage Background Upload (only if full public HTTPS URL)
+      if (imageFile && isFirebaseConfigured) {
+        // Upload to Firebase Storage with a 4s timeout
+        const storagePromise = Promise.race([
+          uploadProductImage(productId, imageFile),
+          new Promise<null>((_, reject) => setTimeout(() => reject(new Error('Storage timeout')), 4000))
+        ]).then(uploadRes => {
+          if (uploadRes && uploadRes.url && uploadRes.url.startsWith('https://')) {
+            productData.image = uploadRes.url;
+            productData.imageMetadata = uploadRes.metadata;
+            if (editingId) onUpdateProduct(productData);
+            else onAddProduct(productData);
+            saveProductToFirestore(productData).catch(() => {});
+          }
+        }).catch(err => console.warn('Firebase storage background upload:', err));
 
-        if (isFirebaseConfigured) {
-          // Upload to Firebase Storage with a strict 4s timeout so it never stalls
-          const storagePromise = Promise.race([
-            uploadProductImage(productId, imageFile),
-            new Promise<null>((_, reject) => setTimeout(() => reject(new Error('Storage timeout')), 4000))
-          ]).then(uploadRes => {
-            if (uploadRes && uploadRes.url) {
-              productData.image = uploadRes.url;
-              productData.imageMetadata = uploadRes.metadata;
-              if (editingId) onUpdateProduct(productData);
-              else onAddProduct(productData);
-              saveProductToFirestore(productData).catch(() => {});
-            }
-          }).catch(err => console.warn('Firebase storage background upload:', err));
-
-          syncPromises.push(storagePromise);
-        }
+        syncPromises.push(storagePromise);
       }
 
       // Wait maximum 1.2 seconds for primary sync confirmation

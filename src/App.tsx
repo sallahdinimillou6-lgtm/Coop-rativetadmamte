@@ -77,19 +77,22 @@ export default function App() {
     async function loadData() {
       setIsLoadingProducts(true);
 
-      // 1. Primary Live Sync: If Firebase is configured, listen to Firestore in real-time
+      // 1. Primary Cloud Firestore Live Sync
       if (isFirebaseConfigured) {
         try {
-          // Permanently purge all dummy/banned product IDs from Firestore
-          await purgeDummyProductsFromFirestore().catch(() => {});
+          // Instant direct fetch for instant first render on mobile
+          const initialDbProducts = await fetchProductsFromFirestore().catch(() => null);
+          if (initialDbProducts && initialDbProducts.length > 0) {
+            const cleanInitial = initialDbProducts.filter(p => !BANNED_DUMMY_PRODUCT_IDS.includes(p.id));
+            setAllProducts(cleanInitial);
+            setIsLoadingProducts(false);
+          }
 
+          // Real-time listener for instant push updates across all devices
           unsubscribeProducts = subscribeToProductsFromFirestore(
             (dbProducts) => {
               const clean = (dbProducts || []).filter(p => !BANNED_DUMMY_PRODUCT_IDS.includes(p.id));
               setAllProducts(clean);
-              if (clean.length > 0) {
-                syncAllProductsToServer(clean);
-              }
               setIsLoadingProducts(false);
             },
             (error) => {
@@ -108,17 +111,17 @@ export default function App() {
         }
       }
 
-      // 2. Fetch from central server API (guarantees universal persistence across all devices)
+      // 2. Secondary fallback to server API if Firestore returned nothing
       try {
         const serverProds = await fetchServerProducts();
         if (serverProds && serverProds.length > 0) {
           const cleanServer = serverProds.filter((p: Product) => !BANNED_DUMMY_PRODUCT_IDS.includes(p.id));
-          setAllProducts(cleanServer);
+          setAllProducts(prev => (prev.length === 0 ? cleanServer : prev));
         }
 
         const serverHero = await fetchServerHeroBackground();
         if (serverHero) {
-          setHeroBackground(serverHero);
+          setHeroBackground(prev => (prev.startsWith('/images/hero-background-v2') ? serverHero : prev));
           localStorage.setItem('tadmamte_hero_bg', serverHero);
         }
       } catch (err) {
@@ -130,20 +133,34 @@ export default function App() {
 
     loadData();
 
-    // 3. Periodic real-time background sync every 4 seconds to guarantee all visitor phones see changes immediately
+    // 3. Periodic real-time background sync every 5 seconds to guarantee all visitor phones see changes immediately
     pollInterval = setInterval(async () => {
       try {
-        const latestProds = await fetchServerProducts();
-        if (latestProds && latestProds.length > 0) {
-          const cleanServer = latestProds.filter((p: Product) => !BANNED_DUMMY_PRODUCT_IDS.includes(p.id));
-          if (cleanServer.length > 0) {
-            setAllProducts((current) => {
-              // Only update if JSON content differs
-              if (JSON.stringify(current) !== JSON.stringify(cleanServer)) {
-                return cleanServer;
-              }
-              return current;
-            });
+        if (isFirebaseConfigured) {
+          const cloudProds = await fetchProductsFromFirestore().catch(() => null);
+          if (cloudProds && cloudProds.length > 0) {
+            const cleanCloud = cloudProds.filter((p: Product) => !BANNED_DUMMY_PRODUCT_IDS.includes(p.id));
+            if (cleanCloud.length > 0) {
+              setAllProducts((current) => {
+                if (JSON.stringify(current) !== JSON.stringify(cleanCloud)) {
+                  return cleanCloud;
+                }
+                return current;
+              });
+            }
+          }
+        } else {
+          const latestProds = await fetchServerProducts();
+          if (latestProds && latestProds.length > 0) {
+            const cleanServer = latestProds.filter((p: Product) => !BANNED_DUMMY_PRODUCT_IDS.includes(p.id));
+            if (cleanServer.length > 0) {
+              setAllProducts((current) => {
+                if (JSON.stringify(current) !== JSON.stringify(cleanServer)) {
+                  return cleanServer;
+                }
+                return current;
+              });
+            }
           }
         }
 
@@ -154,7 +171,7 @@ export default function App() {
       } catch (e) {
         // Silently continue
       }
-    }, 4000);
+    }, 5000);
 
     return () => {
       if (unsubscribeProducts) unsubscribeProducts();
