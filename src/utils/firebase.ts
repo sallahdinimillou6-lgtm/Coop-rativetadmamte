@@ -1,5 +1,6 @@
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { 
+  initializeFirestore,
   getFirestore, 
   collection, 
   doc, 
@@ -8,7 +9,9 @@ import {
   deleteDoc, 
   query, 
   orderBy,
-  onSnapshot
+  onSnapshot,
+  persistentLocalCache,
+  persistentMultipleTabManager
 } from 'firebase/firestore';
 import { 
   getStorage, 
@@ -71,9 +74,27 @@ function initFirebase() {
   if (isFirebaseConfigured) {
     try {
       app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
-      db = (firebaseConfig as any).firestoreDatabaseId 
-        ? getFirestore(app, (firebaseConfig as any).firestoreDatabaseId)
-        : getFirestore(app);
+      
+      const targetDbId = (firebaseConfig as any).firestoreDatabaseId;
+      try {
+        db = initializeFirestore(
+          app,
+          {
+            experimentalLongPollingOptions: {
+              timeoutSeconds: 15
+            },
+            experimentalAutoDetectLongPolling: true,
+            localCache: persistentLocalCache({
+              tabManager: persistentMultipleTabManager()
+            })
+          },
+          targetDbId || undefined
+        );
+      } catch (initErr) {
+        // Fallback if already initialized
+        db = targetDbId ? getFirestore(app, targetDbId) : getFirestore(app);
+      }
+
       storage = getStorage(app);
       console.log('Firebase initialized successfully for project:', firebaseConfig.projectId);
     } catch (error) {
